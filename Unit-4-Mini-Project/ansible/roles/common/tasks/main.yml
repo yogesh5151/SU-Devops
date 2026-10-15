@@ -1,0 +1,31 @@
+---
+- name: Update apt package cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Install system utilities
+  apt:
+    name:
+      - curl
+      - git
+      - jq
+    state: present
+
+- name: Allow SSH through UFW
+  ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: Allow HTTP through UFW
+  ufw:
+    rule: allow
+    port: "80"
+    proto: tcp
+
+- name: Allow application port through UFW
+  ufw:
+    rule: allow
+    port: "5000"
+    proto: tcp

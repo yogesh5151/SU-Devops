@@ -1,0 +1,65 @@
+---
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Create application directory
+  file:
+    path: /opt/library_app
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0755'
+
+- name: Copy application files
+  copy:
+    src: "{{ playbook_dir }}/files/library_app/{{ item }}"
+    dest: "/opt/library_app/{{ item }}"
+    owner: ubuntu
+    group: ubuntu
+    mode: '0644'
+  loop:
+    - app.py
+    - requirements.txt
+    - Dockerfile
+
+- name: Create persistent database directory
+  file:
+    path: /opt/library_app/data
+    state: directory
+    owner: ubuntu
+    group: ubuntu
+    mode: '0775'
+
+- name: Build library application image
+  community.docker.docker_image:
+    name: smart-library
+    tag: latest
+    source: build
+    build:
+      path: /opt/library_app
+    state: present
+
+- name: Run library application container
+  community.docker.docker_container:
+    name: library-app
+    image: smart-library:latest
+    state: started
+    restart_policy: unless-stopped
+    published_ports:
+      - "5000:5000"
+    volumes:
+      - /opt/library_app/data:/data
+
+- name: Verify library application health
+  ansible.builtin.uri:
+    url: http://127.0.0.1:5000/api/health
+    method: GET
+    status_code: 200
+    return_content: yes
+  register: library_health
+  retries: 5
+  delay: 3
+  until: library_health.status == 200
