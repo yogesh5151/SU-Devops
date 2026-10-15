@@ -8,9 +8,9 @@
 
 \### Student Details
 
-\- Name: Om Tambe
+\- Name: Yogesh Nawle
 
-\- PRN: 2125UMLM1065
+\- PRN: 2125UMLM1023
 
 
 
